@@ -1,5 +1,3 @@
-# eda_app.py
-
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -11,7 +9,7 @@ class EDA:
         self.run()
 
     def run(self):
-        st.set_page_config(page_title="인구 데이터 EDA", layout="wide")  # ✨ 전체화면 설정
+        st.set_page_config(page_title="인구 데이터 EDA", layout="wide")
         st.title("📊 데이터 분석")
 
         file = st.file_uploader("population_trends.csv 파일을 업로드해 주세요", type="csv")
@@ -35,12 +33,14 @@ class EDA:
         st.sidebar.markdown("---")
 
         last_year = int(df["연도"].max())
-        start_year = last_year - 9
+        # 슬라이더 추가 (5~30년 사이에서 선택, 기본 10년)
+        years = st.sidebar.slider("최근 몇 년을 분석할까요?", 5, 30, 10)
+        start_year = last_year - years + 1
 
         tabs = st.tabs([
             "1) 데이터 요약",
             "2) 전국 인구 추이",
-            "3) 최근 10년 지역별 변화량",
+            "3) 최근 선택 기간 지역별 변화량",
             "4) 연도별 증감 상위 100",
             "5) 피벗 테이블·누적 영역"
         ])
@@ -70,7 +70,7 @@ class EDA:
             st.pyplot(fig1)
 
         with tabs[2]:
-            st.subheader("📊 최근 10년 지역별 인구 변화량 순위")
+            st.subheader(f"📊 최근 {years}년 ({start_year}–{last_year}) 지역별 인구 변화량 순위")
             mask = (df["연도"].between(start_year, last_year) & (df["지역"] != "전국"))
             period_df = df[mask]
 
@@ -140,6 +140,5 @@ class EDA:
             ax3.margins(0, 0)
             st.pyplot(fig3)
 
-# ✅ 반드시 있어야 함
 if __name__ == "__main__":
     EDA()
