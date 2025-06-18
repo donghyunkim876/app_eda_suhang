@@ -2,3 +2,4 @@ streamlit
 setuptools
 seaborn
 pyrebase
+pycryptodome
