@@ -1,5 +1,6 @@
 import streamlit as st
-import pyrebase
+# pyrebase 대신 pyrebase4를 import 합니다.
+import pyrebase4 as pyrebase # pyrebase4를 pyrebase라는 이름으로 사용하도록 alias 설정
 import time
 import io
 import pandas as pd
@@ -7,12 +8,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Matplotlib 한글 폰트 설정 (Windows 기준, Mac/Linux는 폰트명 변경 필요)
-# 한글 폰트가 설치되어 있지 않으면, 시스템 기본 폰트 사용 또는 설치 필요
-plt.rcParams['font.family'] = 'Malgun Gothic'
-plt.rcParams['axes.unicode_minus'] = False # 마이너스 폰트 깨짐 방지
+# Matplotlib 한글 폰트 설정 제거 (모든 텍스트를 영어로 표시하여 폰트 깨짐 방지)
+# plt.rcParams['font.family'] = 'Malgun Gothic'
+# plt.rcParams['axes.unicode_minus'] = False # 마이너스 폰트 깨짐 방지
 
-# 지역명 번역 맵 (필요에 따라 추가/수정)
+# 지역명 번역 맵 (한글 지역명을 영어로 변환하여 그래프에 표시)
 REGION_TRANSLATION_MAP = {
     '전국': 'National',
     '서울특별시': 'Seoul',
@@ -37,7 +37,7 @@ REGION_TRANSLATION_MAP = {
 
 
 # ---------------------
-# Firebase 설정 (기존 설정 유지)
+# Firebase 설정
 # ---------------------
 firebase_config = {
     "apiKey": "AIzaSyCswFmrOGU3FyLYxwbNPTp7hvQxLfTPIZw",
@@ -49,13 +49,14 @@ firebase_config = {
     "appId": "1:812186368395:web:be2f7291ce54396209d78e"
 }
 
+# pyrebase4를 사용하여 Firebase 앱 초기화
 firebase = pyrebase.initialize_app(firebase_config)
 auth = firebase.auth()
 firestore = firebase.database()
 storage = firebase.storage()
 
 # ---------------------
-# 세션 상태 초기화 (기존 설정 유지)
+# 세션 상태 초기화
 # ---------------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -70,35 +71,35 @@ if "logged_in" not in st.session_state:
 
 
 # ---------------------
-# 홈 페이지 클래스 (기존 설정 유지)
+# 홈 페이지 클래스
 # ---------------------
 class Home:
     def __init__(self, login_page, register_page, findpw_page):
-        st.title("🏠 홈")
+        st.title("🏠 Home")
         if st.session_state.get("logged_in"):
-            st.success(f"환영합니다, {st.session_state.get('user_email')}님!")
+            st.success(f"Welcome, {st.session_state.get('user_email')}!")
 
         # 앱 소개 및 EDA 페이지 안내
         st.markdown("""
                 ---
-                **인구 통계 분석 도구**
-                이 애플리케이션은 사용자가 인구 관련 CSV 파일을 업로드하여,
-                시간에 따른 인구 변화, 지역별 특성, 그리고 연간 증감 추이 등
-                다양한 통계 데이터를 직관적으로 시각화하고 분석할 수 있도록 돕습니다.
-                인구 동향을 파악하고 미래를 예측하는 데 유용한 정보를 제공합니다.
+                **Population Statistics Analysis Tool**
+                This application allows users to upload population-related CSV files to
+                visually analyze and understand various statistical data such as
+                population changes over time, regional characteristics, and annual growth/decline trends.
+                It provides useful insights for understanding population dynamics and forecasting future trends.
                 """)
         st.markdown("---")
-        st.info("💡 **데이터 분석 페이지**로 이동하여 'population_trends.csv' 파일을 업로드하고 인구 동향을 탐색해 보세요!")
+        st.info("💡 Navigate to the **Data Analysis page** to upload 'population_trends.csv' and explore population trends!")
 
 # ---------------------
-# 로그인 페이지 클래스 (기존 설정 유지)
+# 로그인 페이지 클래스
 # ---------------------
 class Login:
     def __init__(self):
-        st.title("🔐 로그인")
-        email = st.text_input("이메일 주소")
-        password = st.text_input("비밀번호", type="password")
-        if st.button("로그인"):
+        st.title("🔐 Login")
+        email = st.text_input("Email Address")
+        password = st.text_input("Password", type="password")
+        if st.button("Login"):
             try:
                 user = auth.sign_in_with_email_and_password(email, password)
                 st.session_state.logged_in = True
@@ -112,25 +113,25 @@ class Login:
                     st.session_state.user_phone = user_info.get("phone", "")
                     st.session_state.profile_image_url = user_info.get("profile_image_url", "")
 
-                st.success("로그인에 성공했습니다!")
+                st.success("Login successful!")
                 time.sleep(1)
                 st.rerun()
             except Exception:
-                st.error("로그인 정보가 올바르지 않습니다.")
+                st.error("Invalid login credentials.")
 
 # ---------------------
-# 회원가입 페이지 클래스 (기존 설정 유지)
+# 회원가입 페이지 클래스
 # ---------------------
 class Register:
     def __init__(self, login_page_url):
-        st.title("📝 회원가입")
-        email = st.text_input("이메일 주소")
-        password = st.text_input("비밀번호 (6자 이상)", type="password")
-        name = st.text_input("이름")
-        gender = st.selectbox("성별", ["선택 안함", "남성", "여성"])
-        phone = st.text_input("휴대폰 번호 (선택 사항)")
+        st.title("📝 Register")
+        email = st.text_input("Email Address")
+        password = st.text_input("Password (6+ characters)", type="password")
+        name = st.text_input("Name")
+        gender = st.selectbox("Gender", ["Select", "Male", "Female"])
+        phone = st.text_input("Phone Number (Optional)")
 
-        if st.button("회원 가입하기"):
+        if st.button("Register Account"):
             try:
                 auth.create_user_with_email_and_password(email, password)
                 firestore.child("users").child(email.replace(".", "_")).set({
@@ -141,63 +142,62 @@ class Register:
                     "role": "user",
                     "profile_image_url": ""
                 })
-                st.success("회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.")
+                st.success("Registration complete! Redirecting to login page.")
                 time.sleep(1)
                 st.switch_page(login_page_url)
             except Exception as e:
-                st.error(f"회원가입 중 오류가 발생했습니다: {e}")
+                st.error(f"Registration failed: {e}")
 
 # ---------------------
-# 비밀번호 찾기 페이지 클래스 (기존 설정 유지)
+# 비밀번호 찾기 페이지 클래스
 # ---------------------
 class FindPassword:
     def __init__(self):
-        st.title("🔎 비밀번호 재설정")
-        email = st.text_input("이메일 주소")
-        if st.button("비밀번호 재설정 이메일 전송"):
+        st.title("🔎 Reset Password")
+        email = st.text_input("Email Address")
+        if st.button("Send Password Reset Email"):
             try:
                 auth.send_password_reset_email(email)
-                st.success("비밀워드 재설정 이메일이 발송되었습니다. 이메일을 확인해주세요.")
+                st.success("Password reset email has been sent. Please check your inbox.")
                 time.sleep(1)
                 st.rerun()
             except Exception as e:
-                st.error(f"이메일 전송 실패: {e}")
+                st.error(f"Failed to send email: {e}")
 
 # ---------------------
-# 사용자 정보 수정 페이지 클래스 (기존 설정 유지)
+# 사용자 정보 수정 페이지 클래스
 # ---------------------
 class UserInfo:
     def __init__(self):
-        st.title("👤 내 정보 관리")
+        st.title("👤 Manage My Info")
 
         email = st.session_state.get("user_email", "")
-        st.text_input("이메일", value=email, disabled=True, help="이메일은 변경할 수 없습니다.") # 이메일 변경 불가하도록
-        name = st.text_input("이름", value=st.session_state.get("user_name", ""))
+        st.text_input("Email", value=email, disabled=True, help="Email cannot be changed.")
+        name = st.text_input("Name", value=st.session_state.get("user_name", ""))
         gender = st.selectbox(
-            "성별",
-            ["선택 안함", "남성", "여성"],
-            index=["선택 안함", "남성", "여성"].index(st.session_state.get("user_gender", "선택 안함"))
+            "Gender",
+            ["Select", "Male", "Female"],
+            index=["Select", "Male", "Female"].index(st.session_state.get("user_gender", "선택 안함")) # Keep internal value consistent
         )
-        phone = st.text_input("휴대폰 번호", value=st.session_state.get("user_phone", ""))
+        phone = st.text_input("Phone Number", value=st.session_state.get("user_phone", ""))
 
         current_profile_image_url = st.session_state.get("profile_image_url")
         if current_profile_image_url:
-            st.image(current_profile_image_url, caption="현재 프로필 이미지", width=150)
+            st.image(current_profile_image_url, caption="Current Profile Image", width=150)
 
-        uploaded_file = st.file_uploader("새 프로필 이미지 업로드", type=["jpg", "jpeg", "png"])
+        uploaded_file = st.file_uploader("Upload New Profile Image", type=["jpg", "jpeg", "png"])
         if uploaded_file:
             file_path = f"profiles/{email.replace('.', '_')}.jpg"
             try:
                 storage.child(file_path).put(uploaded_file, st.session_state.id_token)
                 image_url = storage.child(file_path).get_url(st.session_state.id_token)
                 st.session_state.profile_image_url = image_url
-                st.image(image_url, caption="새 프로필 이미지 미리보기", width=150)
-                st.success("프로필 이미지 업로드 완료!")
+                st.success("Profile image uploaded successfully!")
             except Exception as e:
-                st.error(f"이미지 업로드 실패: {e}")
+                st.error(f"Image upload failed: {e}")
 
 
-        if st.button("정보 업데이트"):
+        if st.button("Update Info"):
             st.session_state.user_name = name
             st.session_state.user_gender = gender
             st.session_state.user_phone = phone
@@ -209,14 +209,14 @@ class UserInfo:
                     "phone": phone,
                     "profile_image_url": st.session_state.get("profile_image_url", "")
                 })
-                st.success("사용자 정보가 성공적으로 저장되었습니다.")
+                st.success("User information successfully saved.")
                 time.sleep(1)
                 st.rerun()
             except Exception as e:
-                st.error(f"정보 저장 실패: {e}")
+                st.error(f"Failed to save information: {e}")
 
 # ---------------------
-# 로그아웃 페이지 클래스 (기존 설정 유지)
+# 로그아웃 페이지 클래스
 # ---------------------
 class Logout:
     def __init__(self):
@@ -224,23 +224,23 @@ class Logout:
         st.session_state.user_email = ""
         st.session_state.id_token = ""
         st.session_state.user_name = ""
-        st.session_state.user_gender = "선택 안함"
+        st.session_state.user_gender = "Select" # Reset to default English
         st.session_state.user_phone = ""
         st.session_state.profile_image_url = ""
-        st.success("안전하게 로그아웃 되었습니다.")
+        st.success("You have been securely logged out.")
         time.sleep(1)
         st.rerun()
 
 # ---------------------
-# EDA 페이지 클래스 (인구 데이터 분석에 맞게 재구성 및 차별화)
+# EDA 페이지 클래스 (인구 데이터 분석)
 # ---------------------
 class EDA:
     def __init__(self):
         self.run_eda_app()
 
     def run_eda_app(self):
-        st.set_page_config(page_title="인구 데이터 통계 분석", layout="wide")
-        st.title("📊 Population Data Analysis Dashboard") # 영어 제목으로 변경
+        st.set_page_config(page_title="Population Data Analysis", layout="wide")
+        st.title("📊 Population Data Analysis Dashboard") # 영어 제목
 
         uploaded_file = st.file_uploader("Upload Population Trends Data (population_trends.csv)", type="csv") # 영어 문구
 
@@ -285,11 +285,11 @@ class EDA:
             st.sidebar.info("Waiting for data load...") # 영어 문구
 
         tabs = st.tabs([
-            "1. Data Overview", # 탭 이름 변경
-            "2. National Population Trend", # 탭 이름 변경
-            "3. Regional Population Change Rank", # 탭 이름 변경
-            "4. Annual Regional Change Records", # 탭 이름 변경
-            "5. Regional Population Composition" # 탭 이름 변경
+            "1. Data Overview", # 탭 이름
+            "2. National Population Trend", # 탭 이름
+            "3. Regional Population Change Rank", # 탭 이름
+            "4. Annual Regional Change Records", # 탭 이름
+            "5. Regional Population Composition" # 탭 이름
         ])
 
         with tabs[0]: # 1) 데이터 개요
@@ -468,7 +468,7 @@ class EDA:
                 
                 # 막대 그래프에 값 표시
                 for bar in bars.patches:
-                    ax2.text(bar.get_width() + (50 if bar.get_width() > 0 else -150),
+                    ax2.text(bar.get_width() + (max(1, abs(bar.get_width() * 0.05)) if bar.get_width() > 0 else -max(1, abs(bar.get_width() * 0.05))),
                              bar.get_y() + bar.get_height() / 2,
                              f'{int(bar.get_width()*1000):,+d}', # 원래 값으로 다시 변환하여 표시, 천단위 콤마, 부호
                              va='center', ha='left' if bar.get_width() > 0 else 'right',
@@ -563,8 +563,8 @@ class EDA:
                     .format({
                         "인구": "{:,.0f}",
                         "Annual_Change": "{:+,.0f}", # 영어 컬럼명
-                        "출생아수(명)": "{:,.0f}", # 임시로 한글 유지, 데이터에 따라 변경 필요
-                        "사망자수(명)": "{:,.0f}"  # 임시로 한글 유지, 데이터에 따라 변경 필요
+                        "출생아수(명)": "{:,.0f}",
+                        "사망자수(명)": "{:,.0f}"
                     })
                 )
                 st.dataframe(styled_table, use_container_width=True)
@@ -606,7 +606,7 @@ class EDA:
                     sns.set_theme(style="whitegrid")
                     fig3, ax3 = plt.subplots(figsize=(14, 8))
                     
-                    colors_for_area = plt.cm.get_cmap('tab20', len(plot_data_for_area.columns)) # 'Spectral' 대신 'tab20'으로 변경
+                    colors_for_area = plt.cm.get_cmap('tab20', len(plot_data_for_area.columns)) 
                     
                     ax3.stackplot(plot_data_for_area.index, plot_data_for_area.T, labels=plot_data_for_area.columns, colors=[colors_for_area(i) for i in range(len(plot_data_for_area.columns))])
                     
@@ -627,21 +627,17 @@ class EDA:
         df_processed = df_raw.copy()
 
         # '세종' 지역의 모든 데이터 열의 결측치('-')를 숫자 0으로 치환
-        # '세종' 지역에 해당하는 행들을 먼저 필터링
         sejong_mask = df_processed['지역'] == '세종특별자치시'
-        if sejong_mask.any(): # '세종' 지역 데이터가 있는 경우에만 처리
-            # '세종' 지역의 모든 컬럼에서 '-'를 0으로 치환
+        if sejong_mask.any():
             df_processed.loc[sejong_mask] = df_processed.loc[sejong_mask].replace('-', '0')
 
         # '인구', '출생아수(명)', '사망자수(명)' 열을 숫자로 변환
-        # errors='coerce'를 사용하여 숫자로 변환할 수 없는 값은 NaN으로 만들고, fillna(0)으로 NaN을 0으로 채움
         numeric_cols = ["연도", "인구", "출생아수(명)", "사망자수(명)"]
         for col in numeric_cols:
             if col in df_processed.columns:
                 df_processed[col] = pd.to_numeric(df_processed[col], errors="coerce").fillna(0)
         
         # 중복 처리: '지역' 컬럼에 "(중복)" 추가
-        # '연도'와 '지역'을 기준으로 중복 판단 후 첫 번째 등장하는 행만 유지하고, 그 이후의 중복 행에 "(중복)" 추가
         dup_mask = df_processed.duplicated(subset=['연도', '지역'], keep="first")
         df_processed.loc[dup_mask, "지역"] = df_processed.loc[dup_mask, "지역"].astype(str) + " (중복)"
 
@@ -649,10 +645,9 @@ class EDA:
 
 
 # ---------------------
-# 페이지 객체 생성 (기존 설정 유지)
+# 페이지 객체 생성
 # ---------------------
 Page_Login    = st.Page(Login,    title="로그인",    icon="🔐", url_path="login")
-# ⚠️ 오류 해결: 유효하지 않은 아이콘 ''를 '📝'로 변경했습니다.
 Page_Register = st.Page(lambda: Register(Page_Login.url_path), title="회원가입", icon="📝", url_path="register")
 Page_FindPW   = st.Page(FindPassword, title="비밀번호 찾기", icon="🔎", url_path="find-password")
 Page_Home     = st.Page(lambda: Home(Page_Login, Page_Register, Page_FindPW), title="홈", icon="🏠", url_path="home", default=True)
@@ -661,7 +656,7 @@ Page_Logout   = st.Page(Logout,   title="로그아웃",  icon="🔓", url_path="
 Page_EDA      = st.Page(EDA,      title="데이터 분석",     icon="📊", url_path="eda")
 
 # ---------------------
-# 네비게이션 실행 (기존 설정 유지)
+# 네비게이션 실행
 # ---------------------
 if st.session_state.logged_in:
     pages = [Page_Home, Page_User, Page_Logout, Page_EDA]

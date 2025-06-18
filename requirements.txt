@@ -3,5 +3,4 @@ pandas
 numpy
 matplotlib
 seaborn
-pyrebase4
-pycryptodome
+firebase-admin
