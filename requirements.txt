@@ -1,5 +1,7 @@
 streamlit
-setuptools
+pandas
+numpy
+matplotlib
 seaborn
 pyrebase
 pycryptodome
