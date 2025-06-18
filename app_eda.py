@@ -1,5 +1,6 @@
 import streamlit as st
-import pyrebase4 
+# pyrebase 대신 pyrebase4를 import 합니다.
+import pyrebase4 as pyrebase # pyrebase4를 pyrebase라는 이름으로 사용하도록 alias 설정
 import time
 import io
 import pandas as pd
@@ -30,8 +31,8 @@ REGION_TRANSLATION_MAP = {
     '전라남도': 'Jeonnam',
     '경상북도': 'Gyeongbuk',
     '경상남도': 'Gyeongnam',
-    '제주특별자치도': 'Jeju'
-    # '세종특별자치시 (중복)': 'Sejong (Duplicate)' # 중복 처리된 이름도 번역 가능
+    '제주특별자치도': 'Jeju',
+    '세종특별자치시 (중복)': 'Sejong (Duplicate)' # 중복 처리된 이름도 번역 가능
 }
 
 
@@ -62,7 +63,7 @@ if "logged_in" not in st.session_state:
     st.session_state.user_email = ""
     st.session_state.id_token = ""
     st.session_state.user_name = ""
-    st.session_state.user_gender = "선택 안함"
+    st.session_state.user_gender = "선택 안함" # Internal value, can be Korean
     st.session_state.user_phone = ""
     st.session_state.profile_image_url = ""
     st.session_state.df_population_eda = None # 인구 데이터용 DataFrame
@@ -108,7 +109,7 @@ class Login:
                 user_info = firestore.child("users").child(email.replace(".", "_")).get().val()
                 if user_info:
                     st.session_state.user_name = user_info.get("name", "")
-                    st.session_state.user_gender = user_info.get("gender", "선택 안함")
+                    st.session_state.user_gender = user_info.get("gender", "Select") # Default English if not found
                     st.session_state.user_phone = user_info.get("phone", "")
                     st.session_state.profile_image_url = user_info.get("profile_image_url", "")
 
@@ -173,10 +174,12 @@ class UserInfo:
         email = st.session_state.get("user_email", "")
         st.text_input("Email", value=email, disabled=True, help="Email cannot be changed.")
         name = st.text_input("Name", value=st.session_state.get("user_name", ""))
+        gender_options = ["Select", "Male", "Female"]
+        current_gender_index = gender_options.index(st.session_state.get("user_gender", "Select")) if st.session_state.get("user_gender", "Select") in gender_options else 0
         gender = st.selectbox(
             "Gender",
-            ["Select", "Male", "Female"],
-            index=["Select", "Male", "Female"].index(st.session_state.get("user_gender", "선택 안함")) # Keep internal value consistent
+            gender_options,
+            index=current_gender_index
         )
         phone = st.text_input("Phone Number", value=st.session_state.get("user_phone", ""))
 
@@ -562,8 +565,8 @@ class EDA:
                     .format({
                         "인구": "{:,.0f}",
                         "Annual_Change": "{:+,.0f}", # 영어 컬럼명
-                        "출생아수(명)": "{:,.0f}",
-                        "사망자수(명)": "{:,.0f}"
+                        "출생아수(명)": "{:,.0f}", # 임시로 한글 유지, 데이터에 따라 변경 필요
+                        "사망자수(명)": "{:,.0f}"  # 임시로 한글 유지, 데이터에 따라 변경 필요
                     })
                 )
                 st.dataframe(styled_table, use_container_width=True)
@@ -646,13 +649,13 @@ class EDA:
 # ---------------------
 # 페이지 객체 생성
 # ---------------------
-Page_Login    = st.Page(Login,    title="로그인",    icon="🔐", url_path="login")
-Page_Register = st.Page(lambda: Register(Page_Login.url_path), title="회원가입", icon="📝", url_path="register")
-Page_FindPW   = st.Page(FindPassword, title="비밀번호 찾기", icon="🔎", url_path="find-password")
-Page_Home     = st.Page(lambda: Home(Page_Login, Page_Register, Page_FindPW), title="홈", icon="🏠", url_path="home", default=True)
-Page_User     = st.Page(UserInfo, title="내 정보", icon="👤", url_path="user-info")
-Page_Logout   = st.Page(Logout,   title="로그아웃",  icon="🔓", url_path="logout")
-Page_EDA      = st.Page(EDA,      title="데이터 분석",     icon="📊", url_path="eda")
+Page_Login    = st.Page(Login,    title="Login",    icon="🔐", url_path="login")
+Page_Register = st.Page(lambda: Register(Page_Login.url_path), title="Register", icon="📝", url_path="register")
+Page_FindPW   = st.Page(FindPassword, title="Find Password", icon="🔎", url_path="find-password")
+Page_Home     = st.Page(lambda: Home(Page_Login, Page_Register, Page_FindPW), title="Home", icon="🏠", url_path="home", default=True)
+Page_User     = st.Page(UserInfo, title="My Info", icon="👤", url_path="user-info")
+Page_Logout   = st.Page(Logout,   title="Logout",  icon="🔓", url_path="logout")
+Page_EDA      = st.Page(EDA,      title="Data Analysis",     icon="📊", url_path="eda")
 
 # ---------------------
 # 네비게이션 실행
