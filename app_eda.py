@@ -1,6 +1,6 @@
 import streamlit as st
 # pyrebase 대신 pyrebase4를 import 합니다.
-import pyrebase4 as pyrebase # pyrebase4를 pyrebase라는 이름으로 사용하도록 alias 설정
+import pyrebase4 # pyrebase4를 pyrebase라는 이름으로 사용하도록 alias 설정
 import time
 import io
 import pandas as pd
