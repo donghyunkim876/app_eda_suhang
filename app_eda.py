@@ -652,11 +652,11 @@ class EDA:
 # 페이지 객체 생성 (기존 설정 유지)
 # ---------------------
 Page_Login    = st.Page(Login,    title="로그인",    icon="🔐", url_path="login")
-Page_Register = st.Page(lambda: Register(Page_Login.url_path), title="회원가입", icon="�", url_path="register")
+# ⚠️ 오류 해결: 유효하지 않은 아이콘 ''를 '📝'로 변경했습니다.
+Page_Register = st.Page(lambda: Register(Page_Login.url_path), title="회원가입", icon="📝", url_path="register")
 Page_FindPW   = st.Page(FindPassword, title="비밀번호 찾기", icon="🔎", url_path="find-password")
 Page_Home     = st.Page(lambda: Home(Page_Login, Page_Register, Page_FindPW), title="홈", icon="🏠", url_path="home", default=True)
 Page_User     = st.Page(UserInfo, title="내 정보", icon="👤", url_path="user-info")
-# ⚠️ 오류 해결: 유효하지 않은 아이콘 ''를 '🔓'로 변경했습니다.
 Page_Logout   = st.Page(Logout,   title="로그아웃",  icon="🔓", url_path="logout")
 Page_EDA      = st.Page(EDA,      title="데이터 분석",     icon="📊", url_path="eda")
 
